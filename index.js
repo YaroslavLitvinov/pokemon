@@ -5,7 +5,7 @@ function ensureTableExist (schema, name, columns) {
   if (!table) {
     table = schema.addTable(name)
     for (const name in columns) {
-      table.addColumn(hocTypes.Json, name, columns[name])
+      table.ensureColumn(hocTypes.Json, name, columns[name])
     }
   }
   return table
@@ -23,30 +23,44 @@ function main () {
     
     const cmds = ensureTableExist(schema, 'cmds', {
       Add: 'action',
+      Delete: 'action',
+      Number: 'number',
     })
-    cmds.onEvent('update of "Add"', poke_action)
+    cmds.onEvent('update of "Add"', poke_add)
+    cmds.onEvent('update of "Delete"', poke_delete)
     if (!cmds.records.size) {
-      cmds.insertRecordData({})
+      cmds.insertRecordData({ Number: 1 })
     }
-    const rec = Array.from(cmds.records.values())[0]
-    rec.set('Add', new Date())
-    console.log('updated', rec.object())
+    // trigger event now
+    // const rec = Array.from(cmds.records.values())[0]
+    // rec.set('Add', new Date())
+    // console.log('updated', rec.object())
   })
 }
 
-async function poke_action (hoc, data, tx) {
-  console.log('poke_action')
+function poke_delete (hoc, data, tx) {
+  console.log('poke_delete')
+  const number = data.new.Number
+  serverSideTx(hoc, store => {
+    const { schema } = store.system
+    const pokemons = schema.table('pokemons')
+    const idsToDel = Array.from(pokemons.records.keys()).slice(-number)
+    idsToDel.forEach(id => pokemons.deleteRecord(id))
+  }, { id: data.schema })
+}
+
+async function poke_add (hoc, data, tx) {
+  console.log('poke_add')
+  const number = data.new.Number
   const Pokedex = require('pokedex-promise-v2')
   const pokedex = new Pokedex()
 
   const offset = hoc.sql('select count(1) from pokemons')[0].count
   
   const list = await pokedex.getPokemonsList({
-    limit: 1,
+    limit: number,
     offset: offset
   })
-  console.log(offset, 'pokemons', JSON.stringify(list))
-  
   serverSideTx(hoc, store => {
     const { schema } = store.system
     const pokemons = schema.table('pokemons')
@@ -63,5 +77,6 @@ async function poke_action (hoc, data, tx) {
 
 module.exports = {
   main,
-  poke_action,
+  poke_add,
+  poke_delete,
 }
