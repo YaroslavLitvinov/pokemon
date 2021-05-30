@@ -1,0 +1,14 @@
+{
+  "name": "pokemon",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "./node_modules/.bin/hoctail install . && ./node_modules/.bin/hoctail deploy.js"
+  },
+  "dependencies": {
+    "@hoctail/client": "*",
+    "debug": "^4.3.1",
+    "pokedex-promise-v2": "^3.3.2",
+    "supports-color": "^9.0.0"
+  }
+}
