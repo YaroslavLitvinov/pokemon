@@ -3,7 +3,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "deploy": "yarn && ./node_modules/.bin/hoctail install . && ./node_modules/.bin/hoctail deploy.js"
+    "deploy": "yarn && ~/git/hoctail/client/cli.js install . && ~/git/hoctail/client/cli.js deploy.js"
   },
   "dependencies": {
     "@hoctail/client": "*",

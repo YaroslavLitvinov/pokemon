@@ -1,10 +1,9 @@
-const { serverSideTx, hocTypes } = require('@hoctail/patch-interface')
 const Pokedex = require('pokedex-promise-v2')
 const pokedex = new Pokedex()
 
 function main (api) {
   let table
-  serverSideTx(hoc, ({ store }) => {
+  api.stx(store => {
     const { schema } = store.system
     const pokemons = api.ensureTableExist(schema, 'pokemons', {
       Name: 'singleLine',
@@ -15,7 +14,8 @@ function main (api) {
       Number: 'number',
     })
     cmds.column('Add').setAction(poke_add)
-    cmds.column('Delete').setAction(poke_delete)
+    //cmds.column('Add').setAction(e => hoc.require('pokemon').poke_add(e))
+    cmds.column('Delete').setAction(e => hoc.require('pokemon').poke_delete(e))
     if (!cmds.records.size) {
       cmds.insertRecordData({ Number: 1 })
     }
